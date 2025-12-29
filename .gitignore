@@ -1,0 +1,10 @@
+.DS_Store
+/bin/
+/pkg/
+*.exe
+*.test
+*.out
+go.work
+go.work.sum
+.env
+*.pdf
