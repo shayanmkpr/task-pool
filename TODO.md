@@ -5,7 +5,9 @@
 - [ ] Http router.
 - [ ] Graceful Shutdown of the server.
 - [ ] Full Configuration.
-- [ ] Save logs.
+    - [x] Config factory
+    - [ ] All configs added to factory.
+- [x] Save logs.
 - [ ] Unit tests with a single run all code.
 - [ ] State Machine?
 - [ ] Dockerfile and Dockerbuild.

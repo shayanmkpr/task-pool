@@ -2,9 +2,7 @@ package store
 
 import (
 	"errors"
-	"log"
 	"sync"
-	"time"
 
 	"github.com/shayanmkpr/task-pool/internal/models"
 )
@@ -50,22 +48,4 @@ func (s *MemoryStore) UpdateTask(task *models.Task) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.tasks[task.ID] = task
-}
-
-func (s *MemoryStore) WaitForCompletion(waitingTime time.Duration) {
-	for {
-		allDone := true
-		tasks := s.ListTasks()
-		for _, t := range tasks {
-			if t.Status != models.Completed {
-				allDone = false
-				break
-			}
-		}
-		if allDone {
-			log.Println("All tasks completed")
-			return
-		}
-		time.Sleep(waitingTime)
-	}
 }

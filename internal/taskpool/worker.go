@@ -11,6 +11,7 @@ type Worker struct {
 	ID       int
 	TaskPool *TaskPool
 	Quit     chan bool
+	Assigned chan *models.Task
 }
 
 func NewWorker(id int, pool *TaskPool) *Worker {
@@ -18,6 +19,7 @@ func NewWorker(id int, pool *TaskPool) *Worker {
 		ID:       id,
 		TaskPool: pool,
 		Quit:     make(chan bool),
+		Assigned: make(chan *models.Task),
 	}
 }
 
@@ -36,6 +38,7 @@ func (w *Worker) Start() {
 }
 
 func (w *Worker) process(task *models.Task) {
+	w.Assigned <- task
 	log.Printf("Worker %d started task %s", w.ID, task.ID)
 	task.Status = models.Running
 	w.TaskPool.Store.UpdateTask(task)
@@ -43,6 +46,7 @@ func (w *Worker) process(task *models.Task) {
 	time.Sleep(task.Duration * time.Second)
 
 	task.Status = models.Completed
+	w.Assigned <- &models.Task{}
 	w.TaskPool.Store.UpdateTask(task)
 	log.Printf("Worker %d completed task %s", w.ID, task.ID)
 }
