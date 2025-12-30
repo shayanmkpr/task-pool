@@ -2,16 +2,21 @@
 
 ## Main Tasks:
 - [ ] Http handlers.
-- [ ] Http router.
+- [x] Http router.
 - [ ] Graceful Shutdown of the server.
 - [ ] Full Configuration.
     - [x] Config factory
     - [ ] All configs added to factory.
 - [x] Save logs.
+    - [ ] remove all log.Printf()s and use slog for them only. fmt.Printf if necessary to have in console.
 - [ ] Unit tests with a single run all code.
+    - [x] Core functionality (workers, pool, memory).
+    - [ ] Handlers core functionality.
+    - [ ] Http E2E test.
 - [ ] State Machine?
 - [ ] Dockerfile and Dockerbuild.
 - [ ] README with complete instructions for building and running the code.
+- [x] (Evaluate solution) Add a coordinator to assign tasks to worker? Over Kill probably.
 
 ## Edge Cases:
 - [ ] The pool is full but the user sends a new task.

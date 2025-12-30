@@ -27,7 +27,7 @@ func (w *Worker) Start() {
 	go func() {
 		for {
 			select {
-			case task := <-w.TaskPool.Tasks:
+			case task := <-w.TaskPool.Tasks: // reading from a buffered channel. This handles the Queue logic. No need for the coordinator.
 				w.process(task)
 			case <-w.Quit:
 				log.Printf("Worker %d shutting down", w.ID)
