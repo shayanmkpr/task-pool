@@ -5,23 +5,27 @@ import (
 	"math/rand"
 	"time"
 
+	cfg "github.com/shayanmkpr/task-pool/config"
 	"github.com/shayanmkpr/task-pool/internal/models"
 	"github.com/shayanmkpr/task-pool/internal/store"
 	"github.com/shayanmkpr/task-pool/internal/taskpool"
 )
 
 func main() {
-	// should move to config
-	poolSize := 10
-	workerCount := 3
+
+	config := cfg.NewConfig()
+	config.LoadDefaults()
+
 	memoryStore := store.NewMemoryStore()
-	pool := taskpool.NewTaskPool(poolSize, memoryStore)
-	workers := make([]*taskpool.Worker, workerCount)
-	for i := range workerCount {
+	pool := taskpool.NewTaskPool(config.PoolSize, memoryStore)
+
+	workers := make([]*taskpool.Worker, config.WorkerCount)
+	for i := range config.WorkerCount {
 		w := taskpool.NewWorker(i+1, pool)
 		w.Start()
 		workers[i] = w
 	}
+
 	for i := 1; i <= 10; i++ {
 		task := &models.Task{
 			ID:          fmt.Sprintf("task-%d", i),
