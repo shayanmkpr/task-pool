@@ -38,8 +38,7 @@ func main() {
 
 	lg.Info("Application started")
 
-	config := cfg.NewConfig()
-	config.LoadDefaults()
+	config := cfg.Load()
 
 	memoryStore := store.NewMemoryStore()
 	pool := taskpool.NewTaskPool(config.PoolSize, memoryStore)
