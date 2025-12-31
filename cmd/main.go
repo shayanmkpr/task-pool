@@ -55,7 +55,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:         ":8080",
-		Handler:      mux,
+		Handler:      api.RequestLogger(mux),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -77,7 +77,7 @@ func main() {
 	fmt.Println("\nShutting down server...")
 	lg.Info("shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
@@ -85,7 +85,7 @@ func main() {
 	}
 
 	lg.Info("waiting for workers to complete...")
-	workerManager.WaitForCompletion(ctx, lg, 500*time.Millisecond)
+	workerManager.WaitForCompletion(ctx, lg, 100*time.Millisecond)
 	workerManager.ForceStopWorkers()
 
 	lg.Info("Application finished")

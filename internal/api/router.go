@@ -1,11 +1,34 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
+
+func RequestLogger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		bodyBytes, _ := io.ReadAll(r.Body)
+		r.Body.Close()
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		fmt.Println("=======================")
+		fmt.Println("Method:", r.Method)
+		fmt.Println("Path:", r.URL.Path)
+		fmt.Println("Body:", string(bodyBytes))
+		fmt.Println("Time:", start.Format(time.RFC3339))
+		fmt.Println("=======================")
+
+		next.ServeHTTP(w, r)
+		fmt.Printf("Completed in %v\n\n", time.Since(start))
+	})
+}
 
 func RegisterTaskRoutes(mux *http.ServeMux, h *Handler) {
 	routes := []struct {
@@ -15,7 +38,7 @@ func RegisterTaskRoutes(mux *http.ServeMux, h *Handler) {
 	}{
 		{"POST", "/tasks", h.createTask},
 		{"GET", "/tasks/{id}", h.getTaskWithID},
-		{"GET", "/tasks/", h.getAllTasks},
+		{"GET", "/tasks", h.getAllTasks},
 	}
 
 	fmt.Println("\nRegistered routes:")

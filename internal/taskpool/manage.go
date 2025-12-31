@@ -49,6 +49,13 @@ func (wm *workerManager) MonitorWorkers(log *logger.Logger) {
 
 func (wm *workerManager) WaitForCompletion(ctx context.Context, log *logger.Logger, waitingTime time.Duration) {
 	for {
+		select {
+		case <-ctx.Done():
+			log.Info("Context cancelled during WaitForCompletion", "error", ctx.Err())
+			return
+		default:
+		}
+
 		allDone := true
 		tasks, err := wm.store.ListTasks(ctx)
 		if err != nil {

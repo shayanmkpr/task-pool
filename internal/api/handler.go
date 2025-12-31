@@ -68,11 +68,11 @@ func (h *Handler) createTask(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("adding task to pool", "task_id", newUUID, "title", req.Title)
 
-	taskID, err := h.pool.AddTask(ctx, &models.Task{
+	taskID, err := h.pool.AddTask(ctx, h.logger, &models.Task{
 		ID:          newUUID,
 		Title:       req.Title,
 		Description: req.Description,
-		Duration:    time.Duration(rand.Intn(5)+1) * time.Second,
+		Duration:    time.Duration(rand.Intn(5) + 1),
 	})
 	if err != nil {
 		h.logger.Error("failed to add task to pool", "error", err)
@@ -80,7 +80,11 @@ func (h *Handler) createTask(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "request cancelled", http.StatusRequestTimeout)
 			return
 		}
-
+		// check if the error is becuase the task queue is full
+		if strings.Contains(err.Error(), "task queue is full") {
+			http.Error(w, "task queue is full", http.StatusTooManyRequests)
+			return
+		}
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}

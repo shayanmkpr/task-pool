@@ -45,10 +45,11 @@ func (w *Worker) process(task *models.Task) {
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- task
 	time.Sleep(task.Duration * time.Second)
+
 	task.Status = models.Completed
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- nil
-	// log.Printf("Worker %d completed task %s", w.ID, task.ID)
+	log.Printf("Worker %d completed task %s", w.ID, task.ID)
 }
 
 func (w *Worker) Stop() {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/shayanmkpr/task-pool/internal/logger"
 	"github.com/shayanmkpr/task-pool/internal/models"
 	"github.com/shayanmkpr/task-pool/internal/store"
 )
@@ -22,7 +23,13 @@ func NewTaskPool(poolSize int, store *store.MemoryStore) *TaskPool {
 	}
 }
 
-func (p *TaskPool) AddTask(ctx context.Context, task *models.Task) (string, error) {
+func (p *TaskPool) AddTask(ctx context.Context, logger *logger.Logger, task *models.Task) (string, error) {
+
+	if len(p.Tasks) >= p.PoolSize {
+		logger.Info("task queue is full")
+		return "", fmt.Errorf("task queue is full")
+	}
+
 	task.Status = models.Pending
 	p.Store.AddTask(task)
 
@@ -34,6 +41,7 @@ func (p *TaskPool) AddTask(ctx context.Context, task *models.Task) (string, erro
 		return task.ID, nil
 
 	default:
+		logger.Info("task queue is full")
 		return "", fmt.Errorf("task queue is full")
 	}
 }
