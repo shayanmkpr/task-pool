@@ -1,6 +1,8 @@
 package taskpool
 
 import (
+	"fmt"
+
 	"github.com/shayanmkpr/task-pool/internal/models"
 	"github.com/shayanmkpr/task-pool/internal/store"
 )
@@ -19,8 +21,13 @@ func NewTaskPool(poolSize int, store *store.MemoryStore) *TaskPool {
 	}
 }
 
-func (p *TaskPool) AddTask(task *models.Task) {
+func (p *TaskPool) AddTask(task *models.Task) error {
 	task.Status = models.Pending
 	p.Store.AddTask(task)
-	p.Tasks <- task // adding to a buffered channel that works as a limitted queue.
+	select {
+	case p.Tasks <- task:
+		return nil
+	default:
+		return fmt.Errorf("task queue is full")
+	}
 }

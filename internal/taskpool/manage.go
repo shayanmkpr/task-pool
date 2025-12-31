@@ -35,9 +35,11 @@ func (wm *workerManager) MonitorWorkers(log *logger.Logger) {
 		go func() {
 			for assigned := range w.Assigned {
 				if assigned != nil {
-					log.Info(fmt.Sprintf("worker %d assigned to %v \n", w.ID, w.ID))
+					fmt.Printf("worker %d assigned to %v \n", w.ID, assigned.ID)
+					log.Info(fmt.Sprintf("worker %d assigned to %v \n", w.ID, assigned.ID))
 				} else {
-					log.Info(fmt.Sprintf("worker %d is free %v \n", w.ID, assigned))
+					fmt.Printf("worker %d is free \n", w.ID)
+					log.Info(fmt.Sprintf("worker %d is free\n", w.ID))
 				}
 			}
 		}()

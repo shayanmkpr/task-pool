@@ -10,6 +10,6 @@ func NewConfig() *Config {
 }
 
 func (c *Config) LoadDefaults() {
-	c.PoolSize = 10
+	c.PoolSize = 4
 	c.WorkerCount = 3
 }

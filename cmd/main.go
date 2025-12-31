@@ -30,12 +30,10 @@ func main() {
 	workerManager := taskpool.NewWorkerManager(config.WorkerCount, memoryStore)
 	workerManager.InitiateWorkers(pool)
 	workerManager.MonitorWorkers(lg)
-	workerManager.ForceStopWorkers() // should change later to the time limit instead of defer
-	workerManager.WaitForCompletion(lg, 500*time.Millisecond)
 
 	// here will be replaces with http server
 
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= config.PoolSize; i++ {
 		task := &models.Task{
 			ID:          fmt.Sprintf("task-%d", i),
 			Title:       fmt.Sprintf("Task %d", i),
@@ -46,4 +44,7 @@ func main() {
 	}
 
 	lg.Info("Application finished")
+
+	workerManager.WaitForCompletion(lg, 500*time.Millisecond)
+	workerManager.ForceStopWorkers() // should change later to the time limit instead of defer
 }
