@@ -1,6 +1,7 @@
 package taskpool
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/shayanmkpr/task-pool/internal/models"
@@ -21,13 +22,18 @@ func NewTaskPool(poolSize int, store *store.MemoryStore) *TaskPool {
 	}
 }
 
-func (p *TaskPool) AddTask(task *models.Task) error {
+func (p *TaskPool) AddTask(ctx context.Context, task *models.Task) (string, error) {
 	task.Status = models.Pending
 	p.Store.AddTask(task)
+
 	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+
 	case p.Tasks <- task:
-		return nil
+		return task.ID, nil
+
 	default:
-		return fmt.Errorf("task queue is full")
+		return "", fmt.Errorf("task queue is full")
 	}
 }

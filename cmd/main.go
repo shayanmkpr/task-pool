@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
@@ -33,6 +34,8 @@ func main() {
 
 	// here will be replaces with http server
 
+	ctx := context.Background()
+
 	for i := 1; i <= config.PoolSize; i++ {
 		task := &models.Task{
 			ID:          fmt.Sprintf("task-%d", i),
@@ -40,11 +43,11 @@ func main() {
 			Description: "Demo task",
 			Duration:    time.Duration(rand.Intn(5) + 1), // Should be 1-5 seconds
 		}
-		pool.AddTask(task)
+		pool.AddTask(ctx, task)
 	}
 
 	lg.Info("Application finished")
 
-	workerManager.WaitForCompletion(lg, 500*time.Millisecond)
+	workerManager.WaitForCompletion(ctx, lg, 500*time.Millisecond)
 	workerManager.ForceStopWorkers() // should change later to the time limit instead of defer
 }

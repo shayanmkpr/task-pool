@@ -28,7 +28,7 @@ func (w *Worker) Start() {
 		defer close(w.Assigned)
 		for {
 			select {
-			case task := <-w.TaskPool.Tasks: // reading from a buffered channel. This handles the Queue logic. No need for the coordinator.
+			case task := <-w.TaskPool.Tasks: // reading from a buffered channel. This handles the Queue logic.
 				w.process(task)
 			case <-w.Quit:
 				// close(w.Assigned) // close the assigned channel.

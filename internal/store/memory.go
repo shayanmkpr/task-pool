@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"errors"
 	"sync"
 
@@ -24,24 +25,38 @@ func (s *MemoryStore) AddTask(task *models.Task) {
 	s.tasks[task.ID] = task
 }
 
-func (s *MemoryStore) GetTask(id string) (*models.Task, error) {
+func (s *MemoryStore) GetTask(ctx context.Context, id string) (*models.Task, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	task, exists := s.tasks[id]
+
 	if !exists {
 		return nil, errors.New("task not found")
 	}
 	return task, nil
 }
 
-func (s *MemoryStore) ListTasks() []*models.Task {
+func (s *MemoryStore) ListTasks(ctx context.Context) ([]*models.Task, error) {
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	tasks := make([]*models.Task, 0, len(s.tasks))
 	for _, t := range s.tasks {
 		tasks = append(tasks, t)
 	}
-	return tasks
+	return tasks, nil
 }
 
 func (s *MemoryStore) UpdateTask(task *models.Task) {

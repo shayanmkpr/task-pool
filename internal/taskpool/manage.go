@@ -1,6 +1,7 @@
 package taskpool
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -46,10 +47,14 @@ func (wm *workerManager) MonitorWorkers(log *logger.Logger) {
 	}
 }
 
-func (wm *workerManager) WaitForCompletion(log *logger.Logger, waitingTime time.Duration) {
+func (wm *workerManager) WaitForCompletion(ctx context.Context, log *logger.Logger, waitingTime time.Duration) {
 	for {
 		allDone := true
-		tasks := wm.store.ListTasks()
+		tasks, err := wm.store.ListTasks(ctx)
+		if err != nil {
+			log.Error("failed to retrieve tasks", "error", err)
+			return
+		}
 		for _, t := range tasks {
 			if t.Status != models.Completed {
 				allDone = false
