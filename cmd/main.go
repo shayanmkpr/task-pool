@@ -27,12 +27,9 @@ func main() {
 	memoryStore := store.NewMemoryStore()
 	pool := taskpool.NewTaskPool(config.PoolSize, memoryStore)
 
-	workers := make([]*taskpool.Worker, config.WorkerCount)
-	for i := range config.WorkerCount {
-		w := taskpool.NewWorker(i+1, pool)
-		w.Start()
-		workers[i] = w
-	}
+	workerManager := taskpool.NewWorkerManager(config.WorkerCount, memoryStore)
+	workerManager.InitiateWorkers(pool)
+	workers := workerManager.Workers
 
 	for _, worker := range workers {
 		w := worker
@@ -57,29 +54,11 @@ func main() {
 		pool.AddTask(task)
 	}
 
-	WaitForCompletion(lg, memoryStore, 500*time.Millisecond)
+	workerManager.WaitForCompletion(lg, 500*time.Millisecond)
 
 	for _, w := range workers {
 		w.Stop()
 	}
 
 	lg.Info("Application finished")
-}
-
-func WaitForCompletion(log *logger.Logger, s *store.MemoryStore, waitingTime time.Duration) {
-	for {
-		allDone := true
-		tasks := s.ListTasks()
-		for _, t := range tasks {
-			if t.Status != models.Completed {
-				allDone = false
-				break
-			}
-		}
-		if allDone {
-			log.Info("All tasks completed")
-			return
-		}
-		time.Sleep(waitingTime)
-	}
 }
