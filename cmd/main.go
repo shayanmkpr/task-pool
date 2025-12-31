@@ -29,20 +29,11 @@ func main() {
 
 	workerManager := taskpool.NewWorkerManager(config.WorkerCount, memoryStore)
 	workerManager.InitiateWorkers(pool)
-	workers := workerManager.Workers
+	workerManager.MonitorWorkers(lg)
+	workerManager.ForceStopWorkers() // should change later to the time limit instead of defer
+	workerManager.WaitForCompletion(lg, 500*time.Millisecond)
 
-	for _, worker := range workers {
-		w := worker
-		go func() {
-			for assigned := range w.Assigned {
-				if assigned != nil {
-					fmt.Printf("worker %d assigned to %v \n", w.ID, w.ID)
-				} else {
-					fmt.Printf("worker %d is free %v \n", w.ID, assigned)
-				}
-			}
-		}()
-	}
+	// here will be replaces with http server
 
 	for i := 1; i <= 10; i++ {
 		task := &models.Task{
@@ -52,12 +43,6 @@ func main() {
 			Duration:    time.Duration(rand.Intn(5) + 1), // Should be 1-5 seconds
 		}
 		pool.AddTask(task)
-	}
-
-	workerManager.WaitForCompletion(lg, 500*time.Millisecond)
-
-	for _, w := range workers {
-		w.Stop()
 	}
 
 	lg.Info("Application finished")

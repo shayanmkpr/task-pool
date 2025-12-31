@@ -415,3 +415,4 @@ func TestPoolWithNoTasks(t *testing.T) {
 		t.Error("Task not properly handled in initially empty pool scenario")
 	}
 }
+

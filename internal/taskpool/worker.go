@@ -19,7 +19,7 @@ func NewWorker(id int, pool *TaskPool) *Worker {
 		ID:       id,
 		TaskPool: pool,
 		Quit:     make(chan bool),
-		Assigned: make(chan *models.Task),
+		Assigned: make(chan *models.Task, 1),
 	}
 }
 
@@ -42,12 +42,10 @@ func (w *Worker) process(task *models.Task) {
 	log.Printf("Worker %d started task %s", w.ID, task.ID)
 	task.Status = models.Running
 	w.TaskPool.Store.UpdateTask(task)
-
 	time.Sleep(task.Duration * time.Second)
-
 	task.Status = models.Completed
-	w.Assigned <- &models.Task{}
 	w.TaskPool.Store.UpdateTask(task)
+	w.Assigned <- nil
 	log.Printf("Worker %d completed task %s", w.ID, task.ID)
 }
 
