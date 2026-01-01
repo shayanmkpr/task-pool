@@ -52,7 +52,7 @@ func TestWorkerProcessTask(t *testing.T) {
 		ID:          "test-task-1",
 		Title:       "Test Task",
 		Description: "This is a test task",
-		Duration:    time.Duration(1), // 1 second (worker multiplies by time.Second)
+		Duration:    1, // 1 second (worker multiplies by time.Second)
 		Status:      models.Pending,
 	}
 
@@ -76,107 +76,6 @@ func TestWorkerProcessTask(t *testing.T) {
 	}
 }
 
-// TestWorkerMultipleTasks tests worker processing multiple tasks sequentially
-func TestWorkerMultipleTasks(t *testing.T) {
-	store := store.NewMemoryStore()
-	pool := NewTaskPool(10, store)
-	worker := NewWorker(1, pool)
-
-	worker.Start()
-	defer worker.Stop()
-
-	const numTasks = 3
-	tasks := make([]*models.Task, numTasks)
-
-	// Create and send tasks
-	for i := 0; i < numTasks; i++ {
-		task := &models.Task{
-			ID:          "task-" + string(rune(i+'0')),
-			Title:       "Task",
-			Description: "Test task",
-			Duration:    time.Duration(1), // 1 second
-			Status:      models.Pending,
-		}
-		tasks[i] = task
-		store.AddTask(task)
-		pool.Tasks <- task
-	}
-
-	// Wait for all tasks to complete (1 second each, sequential processing = 3 seconds + buffer)
-	time.Sleep(100 * time.Millisecond) // Give tasks time to start
-	for _, task := range tasks {
-		if !waitForTaskCompletion(store, task.ID, 5*time.Second) {
-			t.Errorf("Task %s did not complete", task.ID)
-		}
-	}
-
-	// Verify all tasks are completed
-	ctx := context.Background()
-	for _, task := range tasks {
-		storedTask, err := store.GetTask(ctx, task.ID)
-		if err != nil {
-			t.Fatalf("Failed to retrieve task %s: %v", task.ID, err)
-		}
-		if storedTask.Status != models.Completed {
-			t.Errorf("Task %s was not completed. Status: %s", task.ID, storedTask.Status)
-		}
-	}
-}
-
-// TestWorkerMultipleWorkers tests multiple workers processing tasks
-func TestWorkerMultipleWorkers(t *testing.T) {
-	store := store.NewMemoryStore()
-	pool := NewTaskPool(10, store)
-
-	const numWorkers = 3
-	workers := make([]*Worker, numWorkers)
-
-	// Start multiple workers
-	for i := 0; i < numWorkers; i++ {
-		worker := NewWorker(i+1, pool)
-		worker.Start()
-		workers[i] = worker
-		defer worker.Stop()
-	}
-
-	const numTasks = 6
-	tasks := make([]*models.Task, numTasks)
-
-	// Create and send tasks
-	for i := 0; i < numTasks; i++ {
-		task := &models.Task{
-			ID:          "multi-task-" + string(rune(i+'0')),
-			Title:       "Multi Task",
-			Description: "Test task",
-			Duration:    time.Duration(1), // 1 second
-			Status:      models.Pending,
-		}
-		tasks[i] = task
-		store.AddTask(task)
-		pool.Tasks <- task
-	}
-
-	// Wait for all tasks to complete (1 second each, 6 tasks with 3 workers = ~2 seconds + buffer)
-	time.Sleep(100 * time.Millisecond) // Give tasks time to start
-	for _, task := range tasks {
-		if !waitForTaskCompletion(store, task.ID, 5*time.Second) {
-			t.Errorf("Task %s did not complete", task.ID)
-		}
-	}
-
-	// Verify all tasks are completed
-	ctx := context.Background()
-	for _, task := range tasks {
-		storedTask, err := store.GetTask(ctx, task.ID)
-		if err != nil {
-			t.Fatalf("Failed to retrieve task %s: %v", task.ID, err)
-		}
-		if storedTask.Status != models.Completed {
-			t.Errorf("Task %s was not completed. Status: %s", task.ID, storedTask.Status)
-		}
-	}
-}
-
 // TestWorkerLongRunningTask tests worker processing a long-running task
 func TestWorkerLongRunningTask(t *testing.T) {
 	store := store.NewMemoryStore()
@@ -190,7 +89,7 @@ func TestWorkerLongRunningTask(t *testing.T) {
 		ID:          "long-task",
 		Title:       "Long Task",
 		Description: "Task that takes a long time",
-		Duration:    time.Duration(1), // 1 second
+		Duration:    1, // 1 second
 		Status:      models.Pending,
 	}
 

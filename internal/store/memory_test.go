@@ -18,7 +18,7 @@ func TestMemoryStoreBasic(t *testing.T) {
 		Title:       "Basic Test Task",
 		Description: "Task for basic store functionality test",
 		Status:      models.Pending,
-		Duration:    1 * time.Second,
+		Duration:    1,
 	}
 
 	store.AddTask(task)
@@ -55,7 +55,7 @@ func TestMemoryStoreConcurrentSubmissions(t *testing.T) {
 				Title:       "Concurrent Task",
 				Description: "Task for concurrent submission test",
 				Status:      models.Pending,
-				Duration:    1 * time.Second,
+				Duration:    1,
 			}
 			store.AddTask(task)
 		}(i)
@@ -84,7 +84,7 @@ func TestMemoryStoreDuplicateIDs(t *testing.T) {
 		Title:       "First Task",
 		Description: "First task with duplicate ID",
 		Status:      models.Pending,
-		Duration:    1 * time.Second,
+		Duration:    1,
 	}
 
 	task2 := &models.Task{
@@ -92,7 +92,7 @@ func TestMemoryStoreDuplicateIDs(t *testing.T) {
 		Title:       "Second Task",
 		Description: "Second task with duplicate ID",
 		Status:      models.Running,
-		Duration:    2 * time.Second,
+		Duration:    2,
 	}
 
 	store.AddTask(task1)
@@ -143,7 +143,7 @@ func TestMemoryStoreUpdateTask(t *testing.T) {
 		Title:       "Original Title",
 		Description: "Original Description",
 		Status:      models.Pending,
-		Duration:    1 * time.Second,
+		Duration:    1,
 	}
 
 	store.AddTask(task)
@@ -177,7 +177,7 @@ func TestMemoryStoreGetTaskWithTimeout(t *testing.T) {
 		Title:       "Timeout Test Task",
 		Description: "Task for timeout test",
 		Status:      models.Pending,
-		Duration:    1 * time.Second,
+		Duration:    1,
 	}
 	store.AddTask(task)
 
@@ -231,7 +231,7 @@ func TestMemoryStoreConcurrentReadWrite(t *testing.T) {
 				Title:       "Concurrent RW Task",
 				Description: "Task for concurrent read/write test",
 				Status:      models.Pending,
-				Duration:    1 * time.Second,
+				Duration:    1,
 			}
 			store.AddTask(task)
 		}(i)
@@ -274,7 +274,7 @@ func TestMemoryStoreLargeNumberOfTasks(t *testing.T) {
 			Title:       "Large Test Task",
 			Description: "Task for large number test",
 			Status:      models.Pending,
-			Duration:    1 * time.Second,
+			Duration:    1,
 		}
 		store.AddTask(task)
 	}

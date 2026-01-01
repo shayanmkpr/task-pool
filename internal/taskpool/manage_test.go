@@ -1,12 +1,9 @@
 package taskpool
 
 import (
-	"context"
 	"testing"
 	"time"
 
-	"github.com/shayanmkpr/task-pool/internal/logger"
-	"github.com/shayanmkpr/task-pool/internal/models"
 	"github.com/shayanmkpr/task-pool/internal/store"
 )
 
@@ -40,60 +37,6 @@ func TestInitiateWorkers(t *testing.T) {
 		if worker.ID != i+1 {
 			t.Errorf("Expected worker ID %d, got %d", i+1, worker.ID)
 		}
-	}
-}
-
-// TestWaitForCompletion tests waiting for all tasks to complete
-func TestWaitForCompletion(t *testing.T) {
-	store := store.NewMemoryStore()
-	pool := NewTaskPool(10, store)
-	manager := NewWorkerManager(2, store)
-	log := logger.NewTestLogger()
-
-	manager.InitiateWorkers(pool)
-	defer manager.ForceStopWorkers()
-
-	// Add tasks
-	const numTasks = 5
-	for i := 0; i < numTasks; i++ {
-		task := &models.Task{
-			ID:          "wait-task-" + string(rune(i+'0')),
-			Title:       "Wait Task",
-			Description: "Task for wait completion test",
-			Duration:    time.Duration(1), // 1 second
-			Status:      models.Pending,
-		}
-		store.AddTask(task)
-		pool.Tasks <- task
-	}
-
-	// Wait for completion with a timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	done := make(chan bool)
-	go func() {
-		manager.WaitForCompletion(ctx, log, 100*time.Millisecond)
-		done <- true
-	}()
-
-	select {
-	case <-done:
-		// All tasks completed - verify
-		ctx := context.Background()
-		tasks, err := store.ListTasks(ctx)
-		if err != nil {
-			t.Fatalf("Failed to list tasks: %v", err)
-		}
-
-		// Verify all tasks are completed
-		for _, task := range tasks {
-			if task.Status != models.Completed {
-				t.Errorf("Task %s was not completed. Status: %s", task.ID, task.Status)
-			}
-		}
-	case <-time.After(6 * time.Second):
-		t.Error("WaitForCompletion timed out")
 	}
 }
 

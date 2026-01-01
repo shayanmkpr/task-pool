@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/shayanmkpr/task-pool/internal/logger"
 	"github.com/shayanmkpr/task-pool/internal/models"
@@ -116,7 +115,7 @@ func TestCreateTaskPoolFull(t *testing.T) {
 		ID:          "long-task",
 		Title:       "Long Task",
 		Description: "A task that takes a long time",
-		Duration:    5 * time.Second,
+		Duration:    5,
 		Status:      models.Pending,
 	}
 	store.AddTask(longTask)
@@ -151,7 +150,7 @@ func TestGetTaskWithIDSuccess(t *testing.T) {
 		Title:       "Test Task",
 		Description: "This is a test task",
 		Status:      models.Pending,
-		Duration:    1 * time.Second,
+		Duration:    1,
 	}
 	store.AddTask(task)
 
@@ -205,14 +204,14 @@ func TestGetAllTasksSuccess(t *testing.T) {
 		Title:       "Test Task 1",
 		Description: "This is test task 1",
 		Status:      models.Pending,
-		Duration:    1 * time.Second,
+		Duration:    1,
 	}
 	task2 := &models.Task{
 		ID:          "test-id-2",
 		Title:       "Test Task 2",
 		Description: "This is test task 2",
 		Status:      models.Running,
-		Duration:    2 * time.Second,
+		Duration:    2,
 	}
 	store.AddTask(task1)
 	store.AddTask(task2)

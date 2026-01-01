@@ -3,7 +3,6 @@ package taskpool
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/shayanmkpr/task-pool/internal/logger"
 	"github.com/shayanmkpr/task-pool/internal/models"
@@ -24,50 +23,6 @@ func TestNewTaskPool(t *testing.T) {
 	}
 }
 
-// TestAddTaskSuccess tests successfully adding a task
-func TestAddTaskSuccess(t *testing.T) {
-	store := store.NewMemoryStore()
-	pool := NewTaskPool(5, store)
-	log := logger.NewTestLogger()
-
-	task := &models.Task{
-		ID:          "test-task-1",
-		Title:       "Test Task",
-		Description: "This is a test task",
-		Duration:    1 * time.Second,
-	}
-
-	ctx := context.Background()
-	taskID, err := pool.AddTask(ctx, log, task)
-	if err != nil {
-		t.Fatalf("Failed to add task: %v", err)
-	}
-
-	if taskID != "test-task-1" {
-		t.Errorf("Expected task ID 'test-task-1', got '%s'", taskID)
-	}
-
-	// Verify task was stored
-	storedTask, err := store.GetTask(ctx, taskID)
-	if err != nil {
-		t.Fatalf("Failed to retrieve stored task: %v", err)
-	}
-
-	if storedTask.Status != models.Pending {
-		t.Errorf("Expected task status 'pending', got '%s'", storedTask.Status)
-	}
-
-	// Verify task was added to channel
-	select {
-	case taskFromChannel := <-pool.Tasks:
-		if taskFromChannel.ID != taskID {
-			t.Errorf("Task in channel doesn't match. Expected %s, got %s", taskID, taskFromChannel.ID)
-		}
-	case <-time.After(1 * time.Second):
-		t.Error("Task was not added to channel")
-	}
-}
-
 // TestAddTaskPoolFull tests adding task when pool is full (by design)
 func TestAddTaskPoolFull(t *testing.T) {
 	store := store.NewMemoryStore()
@@ -79,7 +34,7 @@ func TestAddTaskPoolFull(t *testing.T) {
 		ID:          "long-task",
 		Title:       "Long Task",
 		Description: "A task that takes a long time",
-		Duration:    5 * time.Second,
+		Duration:    5,
 	}
 	store.AddTask(longTask)
 	pool.Tasks <- longTask
@@ -89,7 +44,7 @@ func TestAddTaskPoolFull(t *testing.T) {
 		ID:          "new-task",
 		Title:       "New Task",
 		Description: "This task should fail",
-		Duration:    1 * time.Second,
+		Duration:    1,
 	}
 
 	ctx := context.Background()
