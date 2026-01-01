@@ -9,10 +9,10 @@
     - [ ] All configs added to factory.
 - [x] Save logs.
     - [x] remove all log.Printf()s and use slog for them only. fmt.Printf if necessary to have in console.
-- [ ] Unit tests with a single run all code.
+- [x] Unit tests with a single run all code.
     - [x] Core functionality (workers, pool, memory).
-    - [ ] Handlers core functionality.
-    - [ ] Http E2E test.
+    - [x] Handlers core functionality.
+    - [x] Http E2E test. --> used Bruno.
 - [x] State Machine?
 - [x] Dockerfile and Dockerbuild.
 - [x] README with complete instructions for building and running the code.

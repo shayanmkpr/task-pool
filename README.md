@@ -16,7 +16,8 @@ Configurable:
 go run cmd/main.go \
   -pool-size=10 \
   -workers=5 \
-  -port=9090
+  -port=9090 \
+  -stdout-log
 ```
 
 ## API Endpoints
