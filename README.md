@@ -74,6 +74,12 @@ go test ./internal/...
 # Build the Docker image
 docker build -t task-pool .
 
-# Run the container
+# Run the container with default settings
 docker run -p 8080:8080 task-pool
-```
+
+# Run the container with custom pool size, workers, port, and logging to stdout
+docker run -p 8080:8080 task-pool \
+  -pool-size=4 \
+  -workers=3 \
+  -port=8080 \
+  -stdout-log

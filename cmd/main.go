@@ -30,15 +30,18 @@ func main() {
 		}
 	}()
 
-	lg, err := logger.New("./app.log", false)
+	config := cfg.Load()
+	stdOutLogs := config.StdOutLog
+
+	lg, err := logger.New("./app.log", stdOutLogs)
 	if err != nil {
 		panic(err)
 	}
-	defer lg.Close()
+	if stdOutLogs {
+		defer lg.Close()
+	}
 
 	lg.Info("Application started")
-
-	config := cfg.Load()
 
 	memoryStore := store.NewMemoryStore()
 	pool := taskpool.NewTaskPool(config.PoolSize, memoryStore)
@@ -53,7 +56,7 @@ func main() {
 	api.RegisterTaskRoutes(mux, handler)
 
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", config.Port), //fix
+		Addr:         fmt.Sprintf(":%d", config.Port), // fix
 		Handler:      api.RequestLogger(mux),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
@@ -76,8 +79,8 @@ func main() {
 	fmt.Println("\nShutting down server...")
 	lg.Info("shutting down server...")
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 1*time.Second) //fix
-	defer shutdownCancel()                                                                  //fix
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 1*time.Second) // fix
+	defer shutdownCancel()                                                                  // fix
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
 		lg.Error("server forced to shutdown", "error", err)
