@@ -2,12 +2,15 @@ package taskpool
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/shayanmkpr/task-pool/internal/logger"
 	"github.com/shayanmkpr/task-pool/internal/models"
 	"github.com/shayanmkpr/task-pool/internal/store"
 )
+
+var ErrTaskQueueFull = errors.New("task queue is full") //fix
 
 type TaskPool struct {
 	PoolSize int
@@ -27,11 +30,13 @@ func (p *TaskPool) AddTask(ctx context.Context, logger *logger.Logger, task *mod
 
 	if len(p.Tasks) >= p.PoolSize {
 		logger.Info("task queue is full")
-		return "", fmt.Errorf("task queue is full")
+		return "", ErrTaskQueueFull //fix
 	}
 
 	task.Status = models.Pending
-	p.Store.AddTask(task)
+	if err := p.Store.AddTask(task); err != nil { //fix
+		return "", fmt.Errorf("failed to store task: %w", err) //fix
+	}
 
 	select {
 	case <-ctx.Done():
@@ -42,6 +47,6 @@ func (p *TaskPool) AddTask(ctx context.Context, logger *logger.Logger, task *mod
 
 	default:
 		logger.Info("task queue is full")
-		return "", fmt.Errorf("task queue is full")
+		return "", ErrTaskQueueFull //fix
 	}
 }

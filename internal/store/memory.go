@@ -19,10 +19,17 @@ func NewMemoryStore() *MemoryStore {
 	}
 }
 
-func (s *MemoryStore) AddTask(task *models.Task) {
+func (s *MemoryStore) AddTask(task *models.Task) error { //fix
+	if task == nil { //fix
+		return errors.New("task cannot be nil") //fix
+	}
+	if task.ID == "" { //fix
+		return errors.New("task ID cannot be empty") //fix
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.tasks[task.ID] = task
+	return nil
 }
 
 func (s *MemoryStore) GetTask(ctx context.Context, id string) (*models.Task, error) {

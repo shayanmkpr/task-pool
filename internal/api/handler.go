@@ -7,13 +7,20 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/shayanmkpr/task-pool/internal/logger"
 	"github.com/shayanmkpr/task-pool/internal/models"
 	"github.com/shayanmkpr/task-pool/internal/store"
 	"github.com/shayanmkpr/task-pool/internal/taskpool"
+)
+
+const (
+	maxRequestBodySize = 1 << 20 // 1MB //fix
+	minTaskDuration    = 1       // seconds //fix
+	maxTaskDuration    = 5       // seconds //fix
+	maxTitleLength     = 200     // characters //fix
+	maxDescLength      = 1000    // characters //fix
 )
 
 type Handler struct {
@@ -44,7 +51,7 @@ func (h *Handler) createTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	r.Body = http.MaxBytesReader(w, r.Body, 1<<20) // 1MB
+	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize) //fix
 
 	var req TaskRequest
 	decoder := json.NewDecoder(r.Body)
@@ -55,10 +62,21 @@ func (h *Handler) createTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid JSON body", http.StatusBadRequest)
 		return
 	}
-	if strings.TrimSpace(req.Title) == "" {
+	title := strings.TrimSpace(req.Title)
+	if title == "" {
 		h.logger.Warn("title is required")
 		http.Error(w, "title is required", http.StatusBadRequest)
 		return
+	}
+	if len(title) > maxTitleLength { //fix
+		h.logger.Warn("title too long")                        //fix
+		http.Error(w, "title too long", http.StatusBadRequest) //fix
+		return                                                 //fix
+	}
+	if len(req.Description) > maxDescLength { //fix
+		h.logger.Warn("description too long")                        //fix
+		http.Error(w, "description too long", http.StatusBadRequest) //fix
+		return                                                       //fix
 	}
 
 	ctx := r.Context()
@@ -70,9 +88,9 @@ func (h *Handler) createTask(w http.ResponseWriter, r *http.Request) {
 
 	taskID, err := h.pool.AddTask(ctx, h.logger, &models.Task{
 		ID:          newUUID,
-		Title:       req.Title,
+		Title:       title, //fix
 		Description: req.Description,
-		Duration:    time.Duration(rand.Intn(5) + 1),
+		Duration:    rand.Intn(maxTaskDuration-minTaskDuration+1) + minTaskDuration, //fix
 	})
 	if err != nil {
 		h.logger.Error("failed to add task to pool", "error", err)
@@ -81,9 +99,9 @@ func (h *Handler) createTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// check if the error is becuase the task queue is full
-		if strings.Contains(err.Error(), "task queue is full") {
-			http.Error(w, "task queue is full", http.StatusTooManyRequests)
-			return
+		if errors.Is(err, taskpool.ErrTaskQueueFull) { //fix
+			http.Error(w, "task queue is full", http.StatusTooManyRequests) //fix
+			return                                                          //fix
 		}
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return

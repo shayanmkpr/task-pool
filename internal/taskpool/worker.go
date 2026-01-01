@@ -1,7 +1,7 @@
 package taskpool
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/shayanmkpr/task-pool/internal/models"
@@ -32,7 +32,7 @@ func (w *Worker) Start() {
 				w.process(task)
 			case <-w.Quit:
 				// close(w.Assigned) // close the assigned channel.
-				log.Printf("Worker %d shutting down", w.ID)
+				fmt.Printf("Worker %d shutting down\n", w.ID) //fix
 				return
 			}
 		}
@@ -44,12 +44,12 @@ func (w *Worker) process(task *models.Task) {
 	task.Status = models.Running
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- task
-	time.Sleep(task.Duration * time.Second)
+	time.Sleep(time.Duration(task.Duration) * time.Second)
 
 	task.Status = models.Completed
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- nil
-	log.Printf("Worker %d completed task %s", w.ID, task.ID)
+	fmt.Printf("Worker %d completed task %s\n", w.ID, task.ID) //fix
 }
 
 func (w *Worker) Stop() {

@@ -13,11 +13,11 @@
     - [x] Core functionality (workers, pool, memory).
     - [ ] Handlers core functionality.
     - [ ] Http E2E test.
-- [ ] State Machine?
-- [ ] Dockerfile and Dockerbuild.
-- [ ] README with complete instructions for building and running the code.
+- [x] State Machine?
+- [x] Dockerfile and Dockerbuild.
+- [x] README with complete instructions for building and running the code.
 - [x] (Evaluate solution) Add a coordinator to assign tasks to worker? Over Kill probably.
-- [ ] For each request, add a timeout. one for all.
+- [x] For each request, add a timeout. one for all.
 
 ## Edge Cases:
 - [ ] The pool is full but the user sends a new task.

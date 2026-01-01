@@ -76,15 +76,17 @@ func main() {
 	fmt.Println("\nShutting down server...")
 	lg.Info("shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 1*time.Second) //fix
+	defer shutdownCancel()                                                                  //fix
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		lg.Error("server forced to shutdown", "error", err)
 	}
 
 	lg.Info("waiting for workers to complete...")
-	workerManager.WaitForCompletion(ctx, lg, 100*time.Millisecond)
+	waitCtx, waitCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer waitCancel()
+	workerManager.WaitForCompletion(waitCtx, lg, 100*time.Millisecond)
 	workerManager.ForceStopWorkers()
 
 	lg.Info("Application finished")
