@@ -40,7 +40,13 @@ func (w *Worker) Start() {
 }
 
 func (w *Worker) process(task *models.Task) {
-	// log.Printf("Worker %d started task %s", w.ID, task.ID)
+	defer func() { // not sure
+		if r := recover(); r != nil {
+			task.Status = models.Failed
+			w.TaskPool.Store.UpdateTask(task)
+			fmt.Printf("Worker %d: task %s failed with panic: %v\n", w.ID, task.ID, r)
+		}
+	}()
 	task.Status = models.Running
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- task

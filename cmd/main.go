@@ -30,7 +30,7 @@ func main() {
 		}
 	}()
 
-	lg, err := logger.New("./app.log")
+	lg, err := logger.New("./app.log", false)
 	if err != nil {
 		panic(err)
 	}
@@ -53,7 +53,7 @@ func main() {
 	api.RegisterTaskRoutes(mux, handler)
 
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%d", config.Port), //fix
 		Handler:      api.RequestLogger(mux),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,

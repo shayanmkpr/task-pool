@@ -62,15 +62,13 @@ curl -X GET http://localhost:8080/tasks
 go build cmd/main.go
 ```
 
-## Running Tests
+## Running Unit Tests
 
 ```bash
-go test ./tests/...
+go test ./internal/...
 ```
 
-## Docker build and run
-
-Docker support is planned for this project (see TODO.md). Once implemented, you'll be able to run:
+## Docker
 
 ```bash
 # Build the Docker image

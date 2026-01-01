@@ -1,0 +1,39 @@
+# Test files
+**/*_test.go
+tests/
+
+# Logs
+*.log
+app.log
+
+# Documentation
+*.md
+!README.md
+*.pdf
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+app
+*.exe
+*.dll
+*.so
+*.dylib
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+

@@ -10,15 +10,28 @@ type Logger struct {
 	*slog.Logger
 }
 
-func New(filename string) (*Logger, error) {
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		return nil, err
-	}
+// filename is ignored if toStdout is true
+func New(filename string, toStdout bool) (*Logger, error) {
+	var (
+		handler slog.Handler
+		f       *os.File
+	)
 
-	handler := slog.NewJSONHandler(f, &slog.HandlerOptions{
-		Level: slog.LevelInfo, // adjust as needed
-	})
+	if toStdout {
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		})
+	} else {
+		var err error
+		f, err = os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+		if err != nil {
+			return nil, err
+		}
+
+		handler = slog.NewJSONHandler(f, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		})
+	}
 
 	return &Logger{
 		file:   f,
