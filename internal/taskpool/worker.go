@@ -19,7 +19,7 @@ func NewWorker(id int, pool *TaskPool) *Worker {
 		ID:       id,
 		TaskPool: pool,
 		Quit:     make(chan struct{}),
-		Assigned: make(chan *models.Task, 1),
+		Assigned: make(chan *models.Task, 2),
 	}
 }
 
@@ -32,7 +32,7 @@ func (w *Worker) Start() {
 				w.process(task)
 			case <-w.Quit:
 				// close(w.Assigned) // close the assigned channel.
-				fmt.Printf("Worker %d shutting down\n", w.ID) //fix
+				fmt.Printf("Worker %d shutting down\n", w.ID) // fix
 				return
 			}
 		}
@@ -51,11 +51,10 @@ func (w *Worker) process(task *models.Task) {
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- task
 	time.Sleep(time.Duration(task.Duration) * time.Second)
-
 	task.Status = models.Completed
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- nil
-	fmt.Printf("Worker %d completed task %s\n", w.ID, task.ID) //fix
+	fmt.Printf("Worker %d completed task %s\n", w.ID, task.ID) // fix
 }
 
 func (w *Worker) Stop() {
