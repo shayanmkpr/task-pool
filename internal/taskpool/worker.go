@@ -50,7 +50,13 @@ func (w *Worker) process(task *models.Task) {
 	task.Status = models.Running
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- task
+
 	time.Sleep(time.Duration(task.Duration) * time.Second)
+	_, err := w.TaskPool.CBack.CallBack(w.ID, task) // callback
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	task.Status = models.Completed
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- nil

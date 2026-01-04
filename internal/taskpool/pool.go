@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 
+	"github.com/shayanmkpr/task-pool/internal/adapter"
 	"github.com/shayanmkpr/task-pool/internal/logger"
 	"github.com/shayanmkpr/task-pool/internal/models"
 	"github.com/shayanmkpr/task-pool/internal/store"
@@ -16,6 +18,7 @@ type TaskPool struct {
 	PoolSize int
 	Tasks    chan *models.Task
 	Store    *store.MemoryStore
+	CBack    adapter.CallBack
 }
 
 func NewTaskPool(poolSize int, store *store.MemoryStore) *TaskPool {
@@ -23,6 +26,10 @@ func NewTaskPool(poolSize int, store *store.MemoryStore) *TaskPool {
 		PoolSize: poolSize,
 		Tasks:    make(chan *models.Task, poolSize),
 		Store:    store,
+		CBack: adapter.CallBack{
+			EndPoint: "http://127.0.0.1:8000",
+			Client:   &http.Client{},
+		},
 	}
 }
 
