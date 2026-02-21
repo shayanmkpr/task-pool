@@ -1,25 +1,25 @@
-package store
+package memory
 
 import (
 	"context"
 	"errors"
 	"sync"
 
-	"github.com/shayanmkpr/task-pool/internal/models"
+	"github.com/shayanmkpr/task-pool/internal/domain/task"
 )
 
 type MemoryStore struct {
-	mu    sync.RWMutex            // for reading memory safe
-	tasks map[string]*models.Task // assigining ids to tasks
+	mu    sync.RWMutex          // for reading memory safe
+	tasks map[string]*task.Task // assigining ids to tasks
 }
 
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
-		tasks: make(map[string]*models.Task),
+		tasks: make(map[string]*task.Task),
 	}
 }
 
-func (s *MemoryStore) AddTask(task *models.Task) error { //fix
+func (s *MemoryStore) AddTask(task *task.Task) error { //fix
 	if task == nil { //fix
 		return errors.New("task cannot be nil") //fix
 	}
@@ -32,7 +32,7 @@ func (s *MemoryStore) AddTask(task *models.Task) error { //fix
 	return nil
 }
 
-func (s *MemoryStore) GetTask(ctx context.Context, id string) (*models.Task, error) {
+func (s *MemoryStore) GetTask(ctx context.Context, id string) (*task.Task, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -49,7 +49,7 @@ func (s *MemoryStore) GetTask(ctx context.Context, id string) (*models.Task, err
 	return task, nil
 }
 
-func (s *MemoryStore) ListTasks(ctx context.Context) ([]*models.Task, error) {
+func (s *MemoryStore) ListTasks(ctx context.Context) ([]*task.Task, error) {
 
 	select {
 	case <-ctx.Done():
@@ -59,14 +59,14 @@ func (s *MemoryStore) ListTasks(ctx context.Context) ([]*models.Task, error) {
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	tasks := make([]*models.Task, 0, len(s.tasks))
+	tasks := make([]*task.Task, 0, len(s.tasks))
 	for _, t := range s.tasks {
 		tasks = append(tasks, t)
 	}
 	return tasks, nil
 }
 
-func (s *MemoryStore) UpdateTask(task *models.Task) {
+func (s *MemoryStore) UpdateTask(task *task.Task) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.tasks[task.ID] = task

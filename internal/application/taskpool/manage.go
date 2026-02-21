@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/shayanmkpr/task-pool/internal/domain/task"
+	"github.com/shayanmkpr/task-pool/internal/infra/memory"
 	"github.com/shayanmkpr/task-pool/internal/logger"
-	"github.com/shayanmkpr/task-pool/internal/models"
-	"github.com/shayanmkpr/task-pool/internal/store"
 )
 
 type workerManager struct {
 	workers []*Worker
-	store   *store.MemoryStore
+	memory  *memory.MemoryStore
 }
 
-func NewWorkerManager(workerCount int, store *store.MemoryStore) *workerManager {
+func NewWorkerManager(workerCount int, store *memory.MemoryStore) *workerManager {
 	return &workerManager{
 		workers: make([]*Worker, workerCount),
-		store:   store,
+		memory:  store,
 	}
 }
 
@@ -57,13 +57,13 @@ func (wm *workerManager) WaitForCompletion(ctx context.Context, log *logger.Logg
 		}
 
 		allDone := true
-		tasks, err := wm.store.ListTasks(ctx)
+		tasks, err := wm.memory.ListTasks(ctx)
 		if err != nil {
 			log.Error("failed to retrieve tasks", "error", err)
 			return
 		}
 		for _, t := range tasks {
-			if t.Status != models.Completed {
+			if t.Status != task.StatusCompleted {
 				allDone = false
 				break
 			}

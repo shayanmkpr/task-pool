@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/shayanmkpr/task-pool/internal/models"
+	taskEntity "github.com/shayanmkpr/task-pool/internal/domain/task"
 )
 
 type Worker struct {
 	ID       int
 	TaskPool *TaskPool
 	Quit     chan struct{}
-	Assigned chan *models.Task
+	Assigned chan *taskEntity.Task
 }
 
 func NewWorker(id int, pool *TaskPool) *Worker {
@@ -19,7 +19,7 @@ func NewWorker(id int, pool *TaskPool) *Worker {
 		ID:       id,
 		TaskPool: pool,
 		Quit:     make(chan struct{}),
-		Assigned: make(chan *models.Task, 1),
+		Assigned: make(chan *taskEntity.Task, 1),
 	}
 }
 
@@ -39,20 +39,20 @@ func (w *Worker) Start() {
 	}()
 }
 
-func (w *Worker) process(task *models.Task) {
+func (w *Worker) process(task *taskEntity.Task) {
 	defer func() { // not sure
 		if r := recover(); r != nil {
-			task.Status = models.Failed
+			task.Status = taskEntity.StatusFailed
 			w.TaskPool.Store.UpdateTask(task)
 			fmt.Printf("Worker %d: task %s failed with panic: %v\n", w.ID, task.ID, r)
 		}
 	}()
-	task.Status = models.Running
+	task.Status = taskEntity.StatusRunning
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- task
 	time.Sleep(time.Duration(task.Duration) * time.Second)
 
-	task.Status = models.Completed
+	task.Status = taskEntity.StatusCompleted
 	w.TaskPool.Store.UpdateTask(task)
 	w.Assigned <- nil
 	fmt.Printf("Worker %d completed task %s\n", w.ID, task.ID) //fix

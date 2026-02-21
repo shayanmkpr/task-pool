@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/shayanmkpr/task-pool/internal/application/taskpool"
+	"github.com/shayanmkpr/task-pool/internal/domain/task"
+	"github.com/shayanmkpr/task-pool/internal/infra/memory"
 	"github.com/shayanmkpr/task-pool/internal/logger"
-	"github.com/shayanmkpr/task-pool/internal/models"
-	"github.com/shayanmkpr/task-pool/internal/store"
-	"github.com/shayanmkpr/task-pool/internal/taskpool"
 )
 
 const (
@@ -25,11 +25,11 @@ const (
 
 type Handler struct {
 	pool   *taskpool.TaskPool
-	store  *store.MemoryStore
+	store  *memory.MemoryStore
 	logger *logger.Logger
 }
 
-func NewHandler(pool *taskpool.TaskPool, store *store.MemoryStore, logger *logger.Logger) *Handler {
+func NewHandler(pool *taskpool.TaskPool, store *memory.MemoryStore, logger *logger.Logger) *Handler {
 	return &Handler{
 		pool:   pool,
 		store:  store,
@@ -86,7 +86,7 @@ func (h *Handler) createTask(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("adding task to pool", "task_id", newUUID, "title", req.Title)
 
-	taskID, err := h.pool.AddTask(ctx, h.logger, &models.Task{
+	taskID, err := h.pool.AddTask(ctx, h.logger, &task.Task{
 		ID:          newUUID,
 		Title:       title, //fix
 		Description: req.Description,

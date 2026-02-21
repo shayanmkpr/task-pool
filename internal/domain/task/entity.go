@@ -1,13 +1,4 @@
-package models
-
-type Status string
-
-const (
-	Pending   Status = "pending"
-	Running   Status = "running"
-	Completed Status = "completed"
-	Failed    Status = "failed"
-)
+package task
 
 type Task struct {
 	ID          string `json:"id"`
@@ -16,3 +7,12 @@ type Task struct {
 	Duration    int    `json:"duration"` // in seconds //fix
 	Status      Status `json:"status"`
 }
+
+type Status string
+
+const (
+	StatusPending   Status = "pending"
+	StatusRunning   Status = "running"
+	StatusCompleted Status = "completed"
+	StatusFailed    Status = "failed"
+)

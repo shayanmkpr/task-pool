@@ -13,9 +13,9 @@ import (
 
 	cfg "github.com/shayanmkpr/task-pool/config"
 	"github.com/shayanmkpr/task-pool/internal/api"
+	"github.com/shayanmkpr/task-pool/internal/application/taskpool"
+	"github.com/shayanmkpr/task-pool/internal/infra/memory"
 	"github.com/shayanmkpr/task-pool/internal/logger"
-	"github.com/shayanmkpr/task-pool/internal/store"
-	"github.com/shayanmkpr/task-pool/internal/taskpool"
 )
 
 func main() {
@@ -43,7 +43,7 @@ func main() {
 
 	lg.Info("Application started")
 
-	memoryStore := store.NewMemoryStore()
+	memoryStore := memory.NewMemoryStore()
 	pool := taskpool.NewTaskPool(config.PoolSize, memoryStore)
 	workerManager := taskpool.NewWorkerManager(config.WorkerCount, memoryStore)
 
