@@ -1,6 +1,7 @@
 package taskpool
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -43,17 +44,17 @@ func (w *Worker) process(task *taskEntity.Task) {
 	defer func() { // not sure
 		if r := recover(); r != nil {
 			task.Status = taskEntity.StatusFailed
-			w.TaskPool.Store.UpdateTask(task)
+			w.TaskPool.Store.UpdateTask(context.TODO(), task)
 			fmt.Printf("Worker %d: task %s failed with panic: %v\n", w.ID, task.ID, r)
 		}
 	}()
 	task.Status = taskEntity.StatusRunning
-	w.TaskPool.Store.UpdateTask(task)
+	w.TaskPool.Store.UpdateTask(context.TODO(), task)
 	w.Assigned <- task
 	time.Sleep(time.Duration(task.Duration) * time.Second)
 
 	task.Status = taskEntity.StatusCompleted
-	w.TaskPool.Store.UpdateTask(task)
+	w.TaskPool.Store.UpdateTask(context.TODO(), task)
 	w.Assigned <- nil
 	fmt.Printf("Worker %d completed task %s\n", w.ID, task.ID) //fix
 }

@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	taskEntity "github.com/shayanmkpr/task-pool/internal/domain/task"
+	"github.com/shayanmkpr/task-pool/config"
 	"github.com/shayanmkpr/task-pool/internal/infra"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type postgresAdapter[T taskEntity.Task] struct {
+type postgresAdapter[T infra.Entity] struct {
 	db *gorm.DB
 }
 
-func NewPostgresAdapter[T taskEntity.Task](dsn string) (infra.Persistence[T], error) {
+func NewPostgresAdapter[T infra.Entity](cfg config.Config) (infra.Persistence[T], error) {
 
+	dsn := cfg.PostgresDSN
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("db connect: %w", err)
@@ -33,21 +34,21 @@ func NewPostgresAdapter[T taskEntity.Task](dsn string) (infra.Persistence[T], er
 
 func (p *postgresAdapter[T]) Save(
 	ctx context.Context,
-	entity *T,
+	entity T,
 ) error {
 	return p.db.WithContext(ctx).Create(entity).Error
 }
 
 func (p *postgresAdapter[T]) Update(
 	ctx context.Context,
-	entity *T,
+	entity T,
 ) error {
 	return p.db.WithContext(ctx).Save(entity).Error
 }
 
 func (p *postgresAdapter[T]) Delete(
 	ctx context.Context,
-	id infra.ID,
+	id string,
 ) error {
 
 	var entity T
@@ -56,10 +57,7 @@ func (p *postgresAdapter[T]) Delete(
 		Delete(&entity, id).
 		Error
 }
-func (p *postgresAdapter[T]) Get(
-	ctx context.Context,
-	id infra.ID,
-) (*T, error) {
+func (p *postgresAdapter[T]) Get(ctx context.Context, id string) (T, error) {
 
 	var entity T
 
@@ -71,7 +69,7 @@ func (p *postgresAdapter[T]) Get(
 		return nil, err
 	}
 
-	return &entity, nil
+	return entity, nil
 }
 
 func (p *postgresAdapter[T]) List(
@@ -97,7 +95,6 @@ func (p *postgresAdapter[T]) Close() error {
 }
 
 func BuildFilter(db *gorm.DB, filter infra.QueryFilter) *gorm.DB {
-
 	for key, value := range filter {
 
 		switch {
@@ -108,6 +105,5 @@ func BuildFilter(db *gorm.DB, filter infra.QueryFilter) *gorm.DB {
 			db = db.Where(fmt.Sprintf("%s ?", key), value)
 		}
 	}
-
 	return db
 }

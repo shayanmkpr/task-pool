@@ -5,17 +5,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/shayanmkpr/task-pool/internal/application/store"
 	"github.com/shayanmkpr/task-pool/internal/domain/task"
-	"github.com/shayanmkpr/task-pool/internal/infra/memory"
+	taskEntity "github.com/shayanmkpr/task-pool/internal/domain/task"
 	"github.com/shayanmkpr/task-pool/internal/logger"
 )
 
 type workerManager struct {
 	workers []*Worker
-	memory  *memory.MemoryStore
+	memory  *store.Store[*taskEntity.Task]
 }
 
-func NewWorkerManager(workerCount int, store *memory.MemoryStore) *workerManager {
+func NewWorkerManager(workerCount int, store *store.Store[*taskEntity.Task]) *workerManager {
 	return &workerManager{
 		workers: make([]*Worker, workerCount),
 		memory:  store,

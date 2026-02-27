@@ -8,18 +8,16 @@ import (
 
 type QueryFilter map[string]any
 
-type ID string
-
 // list the types included in the Persistence.
 type Entity interface {
-	taskEntity.Task
+	*taskEntity.Task
 }
 
 type Persistence[T Entity] interface {
-	Save(ctx context.Context, entity *T) error
-	Update(ctx context.Context, entity *T) error
-	Delete(ctx context.Context, id ID) error
-	Get(ctx context.Context, id ID) (*T, error)
+	Save(ctx context.Context, entity T) error
+	Update(ctx context.Context, entity T) error
+	Delete(ctx context.Context, id string) error
+	Get(ctx context.Context, id string) (T, error)
 	List(ctx context.Context, filter QueryFilter) ([]T, error)
 	Close() error
 }

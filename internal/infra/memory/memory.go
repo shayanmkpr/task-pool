@@ -5,21 +5,23 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/shayanmkpr/task-pool/internal/domain/task"
+	// "github.com/shayanmkpr/task-pool/internal/domain/task"
+	taskEntity "github.com/shayanmkpr/task-pool/internal/domain/task"
 )
 
 type MemoryStore struct {
-	mu    sync.RWMutex          // for reading memory safe
-	tasks map[string]*task.Task // assigining ids to tasks
+	mu    sync.RWMutex                // for reading memory safe
+	tasks map[string]*taskEntity.Task // assigining ids to tasks
 }
 
 func NewMemoryStore() *MemoryStore {
-	return &MemoryStore{
-		tasks: make(map[string]*task.Task),
-	}
+	return &MemoryStore{}
+	// return &infra.Persistence[taskEntity.Task]{
+	// 	tasks: make(map[string]*taskEntity.Task),
+	// }
 }
 
-func (s *MemoryStore) AddTask(task *task.Task) error { //fix
+func (s *MemoryStore) AddTask(task *taskEntity.Task) error { //fix
 	if task == nil { //fix
 		return errors.New("task cannot be nil") //fix
 	}
@@ -32,7 +34,7 @@ func (s *MemoryStore) AddTask(task *task.Task) error { //fix
 	return nil
 }
 
-func (s *MemoryStore) GetTask(ctx context.Context, id string) (*task.Task, error) {
+func (s *MemoryStore) GetTask(ctx context.Context, id string) (*taskEntity.Task, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -49,7 +51,7 @@ func (s *MemoryStore) GetTask(ctx context.Context, id string) (*task.Task, error
 	return task, nil
 }
 
-func (s *MemoryStore) ListTasks(ctx context.Context) ([]*task.Task, error) {
+func (s *MemoryStore) ListTasks(ctx context.Context) ([]*taskEntity.Task, error) {
 
 	select {
 	case <-ctx.Done():
@@ -59,14 +61,14 @@ func (s *MemoryStore) ListTasks(ctx context.Context) ([]*task.Task, error) {
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	tasks := make([]*task.Task, 0, len(s.tasks))
+	tasks := make([]*taskEntity.Task, 0, len(s.tasks))
 	for _, t := range s.tasks {
 		tasks = append(tasks, t)
 	}
 	return tasks, nil
 }
 
-func (s *MemoryStore) UpdateTask(task *task.Task) {
+func (s *MemoryStore) UpdateTask(task *taskEntity.Task) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.tasks[task.ID] = task

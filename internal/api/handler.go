@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/shayanmkpr/task-pool/internal/application/store"
 	"github.com/shayanmkpr/task-pool/internal/application/taskpool"
 	"github.com/shayanmkpr/task-pool/internal/domain/task"
-	"github.com/shayanmkpr/task-pool/internal/infra/memory"
 	"github.com/shayanmkpr/task-pool/internal/logger"
 )
 
@@ -25,11 +25,11 @@ const (
 
 type Handler struct {
 	pool   *taskpool.TaskPool
-	store  *memory.MemoryStore
+	store  *store.Store[*task.Task]
 	logger *logger.Logger
 }
 
-func NewHandler(pool *taskpool.TaskPool, store *memory.MemoryStore, logger *logger.Logger) *Handler {
+func NewHandler(pool *taskpool.TaskPool, store *store.Store[*task.Task], logger *logger.Logger) *Handler {
 	return &Handler{
 		pool:   pool,
 		store:  store,

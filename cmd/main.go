@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -13,8 +14,9 @@ import (
 
 	cfg "github.com/shayanmkpr/task-pool/config"
 	"github.com/shayanmkpr/task-pool/internal/api"
+	"github.com/shayanmkpr/task-pool/internal/application/store"
 	"github.com/shayanmkpr/task-pool/internal/application/taskpool"
-	"github.com/shayanmkpr/task-pool/internal/infra/memory"
+	postgres "github.com/shayanmkpr/task-pool/internal/infra/posgres"
 	"github.com/shayanmkpr/task-pool/internal/logger"
 )
 
@@ -30,7 +32,11 @@ func main() {
 		}
 	}()
 
-	config := cfg.Load()
+	config, err := cfg.Load()
+	if err != nil {
+		log.Fatal("config could not be loaded")
+	}
+
 	stdOutLogs := config.StdOutLog
 
 	lg, err := logger.New("./app.log", stdOutLogs)
@@ -43,15 +49,21 @@ func main() {
 
 	lg.Info("Application started")
 
-	memoryStore := memory.NewMemoryStore()
-	pool := taskpool.NewTaskPool(config.PoolSize, memoryStore)
-	workerManager := taskpool.NewWorkerManager(config.WorkerCount, memoryStore)
+	postgresAdapter, err := postgres.NewPostgresAdapter(*config)
+	if err != nil {
+		log.Fatal("could not import the memory store")
+	}
+	store := store.NewStore(postgresAdapter)
+
+	pool := taskpool.NewTaskPool(config.PoolSize, store)
+
+	workerManager := taskpool.NewWorkerManager(config.WorkerCount, store)
 
 	workerManager.InitiateWorkers(pool)
 	workerManager.MonitorWorkers(lg)
 
 	// Set up HTTP server
-	handler := api.NewHandler(pool, memoryStore, lg)
+	handler := api.NewHandler(pool, store, lg)
 	mux := http.NewServeMux()
 	api.RegisterTaskRoutes(mux, handler)
 
